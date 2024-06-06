@@ -3,6 +3,10 @@ from tkinter import filedialog
 from PIL import Image, ImageTk
 import numpy as np
 from tensorflow.keras.models import load_model
+import os
+
+model_path = '.'
+
 
 gender_map = {
     0: "Male",
