@@ -3,6 +3,7 @@ from tkinter import filedialog
 from PIL import Image, ImageTk
 import numpy as np
 from tensorflow.keras.models import load_model
+import tensorflow as tf
 import os
 
 model_path = '.'
@@ -34,7 +35,7 @@ age_map = {
     9 : '[90-99]', 
 }
 
-
+model = load_model('model.h5')
 
 def prepare_img(img_path):
     print(img_path)
@@ -43,13 +44,16 @@ def prepare_img(img_path):
     img_array = img_array.convert('RGB')
     img_array = np.array(img_array) / 255.0
     img_array = np.expand_dims(img_array, axis=0)
-    predict(img_array)
+    set_x_label(img_array)
     
 def predict(img):
-    model = load_model('model.h5')
     race_pred, gender_pred, age_pred = model.predict(img)
-    label_pred.config(text=f"Predictions: {age_map[age_pred.argmax()]}, {gender_map[gender_pred.argmax()]}, {race_map[race_pred.argmax()]}")
-    print(f"Predictions: {age_map[age_pred.argmax()]}, {gender_map[gender_pred.argmax()]}, {race_map[race_pred.argmax()]}")
+    return tf.nn.softmax(race_pred),tf.nn.sigmoid(gender_pred), tf.nn.softmax(age_pred)
+    
+def set_x_label(img):
+    race_pred, gender_pred, age_pred = predict(img)
+    label_pred.config(text=f"Predicted: {age_map[age_pred.numpy().argmax()]},{gender_map[gender_pred.numpy()[0,0] > 0.5]},{race_map[race_pred.numpy().argmax()]}")
+
 
 def choose_image():
     file_path = filedialog.askopenfilename(filetypes=[("Image files", "*.png;*.jpg")])
